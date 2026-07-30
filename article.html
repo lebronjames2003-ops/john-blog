@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        From a 72-Hour Prototype to a Privacy Incident
+    </title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="container nav-container">
+
+            <a href="index.html" class="logo">
+                John's Blog
+            </a>
+
+            <button class="menu-button" id="menuButton">
+                ☰
+            </button>
+
+            <nav class="navigation" id="navigation">
+                <a href="index.html">Home</a>
+                <a href="index.html#about">About</a>
+                <a href="index.html#articles">Articles</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <main class="article-page">
+
+        <article class="blog-article">
+
+            <div class="article-header">
+
+                <p class="article-category">
+                    SECURE DESIGN • DATA PRIVACY • AI CODING
+                </p>
+
+                <h1>
+                    From a 72-Hour Prototype to a Privacy Incident:
+                    What Went Wrong and How to Rebuild It Right
+                </h1>
+
+                <p class="article-subtitle">
+                    A technical reflection on secure design principles,
+                    responsible development, and obligations under RA No. 10173.
+                </p>
+
+                <div class="author-details">
+                    By John • July 2026 • 10-minute read
+                </div>
+
+            </div>
+
+
+            <div class="article-banner">
+
+                <div>
+
+                    <span>🔒</span>
+
+                    <h2>
+                        Build fast.<br>
+                        Do not break trust.
+                    </h2>
+
+                    <p>
+                        Security and privacy must be part of the design.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="article-body">
+
+                <p class="intro-paragraph">
+                    A working prototype is not automatically a safe product.
+                    The students in this case successfully demonstrated what
+                    modern development tools can accomplish. With the help of
+                    an artificial intelligence coding assistant, they built a
+                    mobile-and-web platform in less than 72 hours.
+                </p>
+
+                <p>
+                    The platform allowed student organizations to manage their
+                    members, collect event fees, communicate privately, and
+                    upload files. It worked well enough to win a hackathon prize
+                    and attract more than a dozen student organizations.
+                </p>
+
+                <p>
+                    The main problem was not simply that the students moved
+                    quickly. The larger problem was that a hackathon prototype
+                    quietly became a production system without undergoing the
+                    security, privacy, testing, and operational changes required
+                    for real software.
+                </p>
+
+                <p>
+                    Once the platform began storing full names, student numbers,
+                    phone numbers, GCash transaction screenshots, identification
+                    photos, and private messages, the developers were no longer
+                    handling harmless demonstration information. Their technical
+                    decisions directly affected the privacy and safety of
+                    hundreds of students.
+                </p>
+
+
+                <h2>What Went Wrong</h2>
+
+                <p>
+                    The most obvious vulnerability appeared in the profile URL.
+                    A user could change a link such as
+                    <code>/profile/1048</code> to
+                    <code>/profile/1049</code> and view another student’s
+                    record.
+                </p>
+
+                <p>
+                    The server did not verify whether the logged-in user owned
+                    the requested profile or had permission to access it. This
+                    type of problem is commonly described as an insecure direct
+                    object reference or broken object-level authorization.
+                </p>
+
+
+                <h3>Violation of Complete Mediation</h3>
+
+                <p>
+                    The principle of Complete Mediation requires the system to
+                    check authorization every time a protected resource is
+                    requested. Logging in is not enough.
+                </p>
+
+                <p>
+                    Authentication answers the question, “Who is this user?”
+                    Authorization answers, “Is this user permitted to view this
+                    specific profile?”
+                </p>
+
+                <p>
+                    The application checked that a person had an account but
+                    did not verify that the person was allowed to access the
+                    requested record. This means Complete Mediation was violated.
+                </p>
+
+
+                <h3>Violation of Fail-Safe Defaults</h3>
+
+                <p>
+                    Fail-Safe Defaults means that access should be denied unless
+                    the system clearly confirms that permission exists.
+                </p>
+
+                <p>
+                    In this application, users could access records unless
+                    something specifically blocked them. A secure system should
+                    do the opposite. It should deny access first and grant it
+                    only after completing a server-side authorization check.
+                </p>
+
+
+                <h3>Violation of Least Privilege</h3>
+
+                <p>
+                    Every account reportedly had broad database read access.
+                    This violated the Principle of Least Privilege.
+                </p>
+
+                <p>
+                    A normal member should only be able to access their own
+                    information and limited organization data. A treasurer
+                    may need to access payment records but may not need to
+                    view identification photos. An organization officer should
+                    not automatically gain access to another organization’s
+                    membership records.
+                </p>
+
+                <p>
+                    The application’s database account should also have had
+                    restricted permissions instead of broad access to every
+                    table and record.
+                </p>
+
+
+                <h3>Violation of Defense in Depth</h3>
+
+                <p>
+                    Defense in Depth means using several independent security
+                    layers. When one layer fails, another safeguard should
+                    reduce the damage.
+                </p>
+
+                <p>
+                    The platform lacked secure transport, proper authorization,
+                    limited database permissions, protected secrets, safe error
+                    handling, and production security controls. Because many
+                    layers failed at the same time, one simple URL change
+                    exposed private information.
+                </p>
+
+
+                <h3>Violation of Secure by Default</h3>
+
+                <p>
+                    The system used broad access permissions, full debugging
+                    messages, exposed credentials, and plain HTTP. These may be
+                    convenient settings during development, but they are unsafe
+                    for production.
+                </p>
+
+                <p>
+                    A production system should disable stack traces, restrict
+                    access, require encrypted connections, protect session
+                    cookies, and deny unauthorized requests automatically.
+                </p>
+
+
+                <h3>Violation of Open Design</h3>
+
+                <p>
+                    The developers assumed that users would not discover the
+                    internal URL format. This relied on secrecy instead of
+                    real authorization.
+                </p>
+
+                <p>
+                    Secure design should remain safe even when users understand
+                    how the routes and application structure work. The URL
+                    format does not need to remain secret. Passwords, API keys,
+                    session secrets, and cryptographic keys must remain secret.
+                </p>
+
+
+                <h3>Violation of Secure Failure</h3>
+
+                <p>
+                    Error pages displayed full stack traces. This may reveal
+                    internal file paths, database details, framework versions,
+                    environment settings, and application structure.
+                </p>
+
+                <p>
+                    A public error message should only provide a simple
+                    explanation and a request identifier. Full technical details
+                    should be placed in protected logs accessible only to
+                    authorized developers.
+                </p>
+
+
+                <h2>Horizon One: Short-Term Containment</h2>
+
+                <p>
+                    The first goal is to stop further exposure. New features
+                    should be paused until the system is secured and the
+                    possible breach is understood.
+                </p>
+
+
+                <h3>1. Take the Application Offline</h3>
+
+                <p>
+                    Pulling the platform offline was an appropriate first step.
+                    The system should remain unavailable until unauthorized
+                    access paths are corrected.
+                </p>
+
+                <p>
+                    Logs, database backups, hosting records, repository history,
+                    and configuration files should be preserved. These may show
+                    which records were accessed and whether the vulnerability
+                    was used.
+                </p>
+
+                <p>
+                    This action restores Fail-Safe Defaults because access is
+                    denied while the system’s security is uncertain.
+                </p>
+
+
+                <h3>2. Rotate Exposed Credentials</h3>
+
+                <p>
+                    The database password and payment API key should be treated
+                    as compromised even when there is no visible evidence that
+                    someone used them.
+                </p>
+
+                <ul>
+                    <li>Disable the exposed database account.</li>
+                    <li>Create a new account with limited access.</li>
+                    <li>Revoke and regenerate the payment API key.</li>
+                    <li>Rotate session and application secrets.</li>
+                    <li>Invalidate active user sessions.</li>
+                    <li>Review database and payment-provider logs.</li>
+                </ul>
+
+                <p>
+                    Removing a password from the latest GitHub file is not
+                    enough because it may remain visible in earlier commits.
+                    The secret must be revoked first.
+                </p>
+
+                <p>
+                    These actions restore Least Privilege, Compartmentalization,
+                    and Defense in Depth.
+                </p>
+
+
+                <h3>3. Fix Authorization Checks</h3>
+
+                <p>
+                    Every request involving personal information must pass
+                    through a server-side authorization check.
+                </p>
+
+                <p>
+                    Before showing a profile, the application should verify
+                    that the requester is properly authenticated and has a
+                    legitimate relationship with the requested record.
+                </p>
+
+                <p>
+                    The system should return a generic forbidden or not-found
+                    response when the requester lacks permission.
+                </p>
+
+                <p>
+                    This restores Complete Mediation, Least Privilege, and
+                    Fail-Safe Defaults.
+                </p>
+
+
+                <h3>4. Require HTTPS</h3>
+
+                <p>
+                    The system should only be available through HTTPS. HTTP
+                    requests should redirect automatically to an encrypted
+                    connection.
+                </p>
+
+                <p>
+                    Session cookies should use Secure, HttpOnly, and appropriate
+                    SameSite settings. Debugging mode should also be disabled.
+                </p>
+
+                <p>
+                    This restores Defense in Depth and Security by Default.
+                </p>
+
+
+                <h3>5. Investigate the Incident</h3>
+
+                <p>
+                    The team should identify the information affected, the
+                    period during which the vulnerability existed, and the
+                    users who may have accessed records they did not own.
+                </p>
+
+                <p>
+                    They should also determine whether private files, payment
+                    details, identification photos, and chat messages were
+                    exposed through other routes.
+                </p>
+
+                <p>
+                    It is not enough to say that nothing malicious happened.
+                    The absence of a complaint does not prove that unauthorized
+                    access did not occur.
+                </p>
+
+
+                <h3>6. Follow Data Breach Procedures</h3>
+
+                <p>
+                    The team should immediately involve the university’s Data
+                    Protection Officer or authorized privacy personnel.
+                </p>
+
+                <p>
+                    Under Republic Act No. 10173, organizations handling
+                    personal information must apply reasonable organizational,
+                    physical, and technical security measures.
+                </p>
+
+                <p>
+                    A documented breach assessment should determine whether
+                    notification to the National Privacy Commission and affected
+                    data subjects is required.
+                </p>
+
+                <p>
+                    This restores Accountability, Transparency, and responsible
+                    incident handling.
+                </p>
+
+
+                <h2>Horizon Two: Long-Term Design Changes</h2>
+
+                <p>
+                    Containment addresses the immediate danger. Long-term
+                    improvements are needed to prevent the same security
+                    conditions from returning.
+                </p>
+
+
+                <h3>1. Begin With Security and Privacy Requirements</h3>
+
+                <p>
+                    Before rebuilding the system, the developers should identify
+                    all user roles, personal data fields, access boundaries,
+                    legal obligations, misuse cases, and possible attacks.
+                </p>
+
+                <p>
+                    Security requirements should be treated as core product
+                    requirements instead of optional features added at the end.
+                </p>
+
+                <p>
+                    This restores Security by Design.
+                </p>
+
+
+                <h3>2. Collect Less Personal Information</h3>
+
+                <p>
+                    The team should review whether every requested data field
+                    is truly necessary.
+                </p>
+
+                <p>
+                    For example, the platform may not need to retain a complete
+                    GCash screenshot. A transaction reference number, amount,
+                    payment date, and verification status may be sufficient.
+                </p>
+
+                <p>
+                    Uploaded identification photos should only be collected when
+                    they are necessary for a specific and declared purpose.
+                    They should not be stored indefinitely.
+                </p>
+
+                <p>
+                    These actions restore Data Minimization, Proportionality,
+                    and Privacy by Default.
+                </p>
+
+
+                <h3>3. Use Centralized Authorization</h3>
+
+                <p>
+                    Authorization rules should be placed in one consistent
+                    system, such as middleware or a tested policy module.
+                </p>
+
+                <p>
+                    The platform should verify role, record ownership,
+                    organization membership, and the sensitivity of the
+                    requested information.
+                </p>
+
+                <p>
+                    Automated tests should confirm that one user cannot access
+                    another user’s profile or another organization’s records.
+                </p>
+
+                <p>
+                    This restores Complete Mediation, Least Privilege, and
+                    Separation of Duties.
+                </p>
+
+
+                <h3>4. Separate Development and Production</h3>
+
+                <p>
+                    Development, testing, and production environments should
+                    use different databases, accounts, API keys, and hosting
+                    settings.
+                </p>
+
+                <p>
+                    Real student data should not be copied into a development
+                    environment without a legitimate reason and proper
+                    protection.
+                </p>
+
+                <p>
+                    Secrets should be stored in protected environment variables
+                    or secret-management services rather than being placed
+                    directly inside source code.
+                </p>
+
+                <p>
+                    This restores Compartmentalization and Defense in Depth.
+                </p>
+
+
+                <h3>5. Protect Data in Transit and at Rest</h3>
+
+                <p>
+                    HTTPS should be mandatory. Sensitive files should be stored
+                    privately and should only be accessed through authorized
+                    requests.
+                </p>
+
+                <p>
+                    Backups should be encrypted, protected, tested, and included
+                    in the platform’s deletion and retention policy.
+                </p>
+
+                <p>
+                    Passwords should be stored using secure password hashing
+                    rather than plain text or reversible encryption.
+                </p>
+
+
+                <h3>6. Create a Secure Development Process</h3>
+
+                <p>
+                    Every release should undergo human code review, authorization
+                    tests, dependency scanning, secret scanning, static security
+                    testing, dynamic testing, and privacy review.
+                </p>
+
+                <p>
+                    Logging should record important authentication and
+                    authorization events without unnecessarily copying sensitive
+                    information into log files.
+                </p>
+
+                <p>
+                    This creates repeatable protection instead of relying only
+                    on developer memory.
+                </p>
+
+
+                <h3>7. Treat AI-Generated Code as Untrusted</h3>
+
+                <p>
+                    Artificial intelligence coding assistants can generate
+                    working code quickly, but working code is not automatically
+                    secure code.
+                </p>
+
+                <p>
+                    AI-generated code should be reviewed in the same way as code
+                    copied from an unknown internet source. It must be tested,
+                    verified, threat-modeled, and compared with the project’s
+                    security requirements.
+                </p>
+
+                <p>
+                    An AI assistant may generate a working profile endpoint but
+                    fail to include access control, safe logging, rate limiting,
+                    secure database permissions, privacy controls, or proper
+                    error handling.
+                </p>
+
+                <p>
+                    The developers remain responsible for the final system and
+                    its consequences.
+                </p>
+
+
+                <h2>Obligations Under RA No. 10173</h2>
+
+                <p>
+                    Republic Act No. 10173, also known as the Data Privacy Act
+                    of 2012, requires personal information to be processed
+                    according to transparency, legitimate purpose, and
+                    proportionality.
+                </p>
+
+                <p>
+                    Developers influence whether these principles are actually
+                    followed. Their architecture determines who can view the
+                    data, how long the information is retained, whether access
+                    is recorded, and whether unauthorized disclosure is
+                    prevented.
+                </p>
+
+                <p>
+                    Privacy is therefore not only the responsibility of legal
+                    officers or university administrators. It is reflected in
+                    database permissions, access-control policies, file-storage
+                    settings, error messages, encryption, and deletion
+                    procedures.
+                </p>
+
+
+                <h2>Shipping Fast Without Sacrificing Trust</h2>
+
+                <p>
+                    Speed is valuable. Hackathons and AI coding assistants allow
+                    small teams to turn ideas into working prototypes quickly.
+                    However, the acceptable level of risk changes when a
+                    prototype begins accepting real users and real personal
+                    information.
+                </p>
+
+                <p>
+                    There should be a clear boundary between demonstration
+                    software and production software. Before crossing that
+                    boundary, a team must assess the information it will hold,
+                    establish proper access control, protect credentials,
+                    minimize data collection, require encrypted connections,
+                    test the system, and prepare an incident-response plan.
+                </p>
+
+                <p>
+                    A platform is not truly successful simply because it was
+                    completed in 72 hours. It is successful when it works while
+                    also respecting the privacy, security, and dignity of the
+                    people who use it.
+                </p>
+
+                <p>
+                    AI can accelerate programming, but it cannot replace human
+                    judgment, professional responsibility, and accountability.
+                    The faster software is produced, the more disciplined its
+                    review must become.
+                </p>
+
+                <blockquote>
+                    Build quickly, but never treat real people and their
+                    personal information as testing material.
+                </blockquote>
+
+
+                <div class="back-home">
+
+                    <a href="index.html" class="primary-button">
+                        ← Return to Homepage
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </main>
+
+
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <p>
+                © 2026 John's Blog
+            </p>
+
+            <p>
+                Sharing my thoughts, lessons, and experiences.
+            </p>
+
+        </div>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
