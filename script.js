@@ -39,10 +39,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
             event.preventDefault();
 
-            // Start the fade-out transition
             document.body.classList.add("page-exit");
 
-            // Open the page after the transition
             setTimeout(function () {
                 window.location.href = destination;
             }, 350);
