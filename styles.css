@@ -970,3 +970,203 @@ nav a.active {
         font-size: 36px;
     }
 }
+
+/* =====================================
+   PHONE LAYOUT ONLY
+   Desktop design will not be changed
+   ===================================== */
+
+@media screen and (max-width: 600px) {
+
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .container {
+        width: calc(100% - 32px);
+    }
+
+    /* Header and navigation */
+
+    .site-header {
+        height: auto;
+    }
+
+    .header-container {
+        height: auto;
+        padding: 14px 16px;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .logo {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .nav-links {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .nav-links a {
+        padding: 10px 6px;
+        text-align: center;
+        font-size: 14px;
+        background-color: #f3f7fc;
+        border-radius: 8px;
+    }
+
+    /* Homepage hero */
+
+    .hero {
+        padding: 45px 0;
+    }
+
+    .hero-content {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+        line-height: 1.15;
+    }
+
+    .hero-description {
+        margin: 18px 0 25px;
+        font-size: 16px;
+    }
+
+    .hero-card {
+        padding: 26px 22px;
+    }
+
+    /* Put all cards in one column */
+
+    .about-grid,
+    .principles-grid,
+    .article-preview,
+    .contact-content,
+    .posts-grid,
+    .contact-container {
+        grid-template-columns: 1fr;
+    }
+
+    /* Section spacing */
+
+    .about-section,
+    .articles-section,
+    .contact-section,
+    .principles-section {
+        padding: 55px 0;
+    }
+
+    .section-heading h2,
+    .contact-content h2 {
+        font-size: 29px;
+        line-height: 1.25;
+    }
+
+    /* Article preview */
+
+    .article-image {
+        min-height: 230px;
+    }
+
+    .article-preview-content {
+        padding: 24px 20px;
+    }
+
+    .article-preview-content h3 {
+        font-size: 26px;
+    }
+
+    /* Cards */
+
+    .about-card,
+    .principle-card,
+    .post-card,
+    .contact-card,
+    .contact-info,
+    .contact-form {
+        min-height: auto;
+        padding: 24px 20px;
+    }
+
+    /* Other pages */
+
+    .page-content,
+    .about-page,
+    .contact-page {
+        padding: 45px 18px;
+    }
+
+    .page-content h1,
+    .about-section > h1,
+    .contact-section > h1 {
+        font-size: 34px;
+        line-height: 1.25;
+    }
+
+    .page-card {
+        padding: 25px 20px;
+    }
+
+    /* Full article */
+
+    .blog-article {
+        width: calc(100% - 24px);
+    }
+
+    .article-header,
+    .article-body {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .article-header h1 {
+        font-size: 30px;
+    }
+
+    .article-banner {
+        min-height: 230px;
+        margin: 0 12px;
+        padding: 20px;
+    }
+
+    .article-banner h2 {
+        font-size: 28px;
+    }
+
+    /* Contact form */
+
+    .contact-form input,
+    .contact-form textarea {
+        width: 100%;
+    }
+
+    .contact-button,
+    .contact-form button,
+    .primary-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Footer */
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
