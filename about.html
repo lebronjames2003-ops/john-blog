@@ -32,14 +32,16 @@
 
             <p class="section-label">ABOUT ME</p>
 
-            <h1>A little information about me</h1>
+            <h1 id="profile-about-title">
+                A little information about me
+            </h1>
 
             <div class="about-grid">
 
                 <article class="about-card">
                     <h2>Who I Am</h2>
 
-                    <p>
+                    <p id="profile-about-text">
                         My name is John. I am a student who is interested
                         in technology, design, online platforms, and
                         learning new digital skills.
@@ -72,7 +74,60 @@
 
     </main>
 
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    const profileClient = window.supabase.createClient(
+        "https://mfvatxtvhxnzpdjecygn.supabase.co",
+        "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz"
+    );
+
+    async function loadAboutProfile() {
+
+        const { data, error } = await profileClient
+            .from("site_profile")
+            .select("*")
+            .order("updated_at", { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error("ABOUT PROFILE ERROR:", error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            return;
+        }
+
+        const profile = data[0];
+
+        const aboutTitle =
+            document.getElementById("profile-about-title");
+
+        const aboutText =
+            document.getElementById("profile-about-text");
+
+        if (aboutTitle && profile.about_title) {
+            aboutTitle.textContent =
+                profile.about_title;
+        }
+
+        if (aboutText && profile.about_text) {
+            aboutText.textContent =
+                profile.about_text;
+        }
+    }
+
+    loadAboutProfile();
+</script>
+
+<script src="script.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // profile code here
+</script>
 
 </body>
 </html>

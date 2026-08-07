@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<script src="script.js"></script>
 <body>
 
     <header class="site-header">
@@ -39,7 +38,7 @@
 
                 <div class="hero-text">
 
-                    <p class="tagline">
+                    <p  class="tagline" id="profile-headline">
                         PERSONAL BLOG • STUDENT LIFE • TECHNOLOGY
                     </p>
 
@@ -47,7 +46,7 @@
                         Welcome to my personal blog.
                     </h1>
 
-                    <p class="hero-description">
+                    <p class="hero-description" id="profile-intro">
                         Hi, I’m John. I share student experiences, technology topics, projects, and lessons from my learning journey.
                     </p>
 
@@ -61,16 +60,20 @@
                 <div class="hero-card">
 
                    <img
-                       src="profile.jpg"
-                       alt="John's profile picture"
-                       class="profile-picture"
-                   >
+                        src="profile.jpg"
+                        alt="John's profile picture"
+                        class="profile-picture"
+                        id="profile-image"
+                    >
 
-                    <h2>Hello, I’m John!</h2>
+                    <h2>
+                        Hello, I’m <span id="profile-name">John</span>!
+                    </h2>
 
-                    <p>
-                        I am a simple student who enjoys learning new things and improving little by little through every experience.
-
+                    <p id="profile-intro">
+                        I am a simple student who enjoys learning new
+                        things and improving little by little through
+                        every experience.
                     </p>
 
                 </div>
@@ -288,7 +291,60 @@
     </footer>
 
 
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    const profileClient = window.supabase.createClient(
+        "https://mfvatxtvhxnzpdjecygn.supabase.co",
+        "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz"
+    );
+
+    async function loadProfile() {
+
+        const { data, error } = await profileClient
+            .from("site_profile")
+            .select("*")
+            .order("updated_at", { ascending: false })
+            .limit(1);
+
+        if (error) {
+            console.error("PROFILE ERROR:", error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            console.log("No profile found.");
+            return;
+        }
+
+        const profile = data[0];
+
+        const name = document.getElementById("profile-name");
+        const headline = document.getElementById("profile-headline");
+        const intro = document.getElementById("profile-intro");
+        const image = document.getElementById("profile-image");
+
+        if (name && profile.display_name) {
+            name.textContent = profile.display_name;
+        }
+
+        if (headline && profile.headline) {
+            headline.textContent = profile.headline;
+        }
+
+        if (intro && profile.short_intro) {
+            intro.textContent = profile.short_intro;
+        }
+
+        if (image && profile.profile_image_url) {
+            image.src = profile.profile_image_url;
+        }
+
+        console.log("Profile loaded:", profile);
+    }
+
+    loadProfile();
+</script>
 
 </body>
 </html>
