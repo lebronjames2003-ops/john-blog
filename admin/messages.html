@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Messages | John's Blog</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #0f2347;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 34px;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 11px 17px;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: #1d4ed8;
+        }
+
+        .message-count {
+            margin-bottom: 20px;
+            color: #667085;
+        }
+
+        #messages-list {
+            display: grid;
+            gap: 18px;
+        }
+
+        .message-card {
+            padding: 25px;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid #e4e7ec;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+
+        .message-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .sender-name {
+            margin: 0 0 6px;
+            font-size: 21px;
+        }
+
+        .sender-email {
+            color: #2563eb;
+            text-decoration: none;
+            overflow-wrap: anywhere;
+        }
+
+        .message-date {
+            color: #667085;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .message-body {
+            margin: 0;
+            padding: 18px;
+            border-radius: 9px;
+            background: #f8fafc;
+            color: #344054;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .reply-button,
+        .delete-button {
+            display: inline-block;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .reply-button {
+            background: #2563eb;
+            color: white;
+        }
+
+        .delete-button {
+            background: #dc2626;
+            color: white;
+        }
+
+        .delete-button:hover {
+            background: #b91c1c;
+        }
+
+        .loading,
+        .empty,
+        .error {
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 14px;
+            background: white;
+        }
+
+        .loading,
+        .empty {
+            color: #667085;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        #status-message {
+            display: none;
+            margin-bottom: 20px;
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .success {
+            display: block !important;
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .error-status {
+            display: block !important;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        @media screen and (max-width: 650px) {
+            body {
+                padding: 20px 14px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .top-bar h1 {
+                font-size: 29px;
+            }
+
+            .back-button {
+                text-align: center;
+            }
+
+            .message-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .message-actions {
+                flex-direction: column;
+            }
+
+            .reply-button,
+            .delete-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="container">
+
+        <div class="top-bar">
+            <h1>Messages</h1>
+
+            <a
+                href="dashboard.html"
+                class="back-button"
+            >
+                ← Dashboard
+            </a>
+        </div>
+
+
+        <p
+            id="message-count"
+            class="message-count"
+        >
+            Loading messages...
+        </p>
+
+
+        <div id="status-message"></div>
+
+
+        <section id="messages-list">
+
+            <div class="loading">
+                Loading your messages...
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Supabase -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+    ></script>
+
+
+    <script>
+
+        const SUPABASE_URL =
+            "https://mfvatxtvhxnzpdjecygn.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz";
+
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
+
+        const messagesList =
+            document.getElementById(
+                "messages-list"
+            );
+
+        const messageCount =
+            document.getElementById(
+                "message-count"
+            );
+
+        const statusMessage =
+            document.getElementById(
+                "status-message"
+            );
+
+
+        /*
+        =====================================
+        SECURITY
+        Only logged-in admin can access
+        =====================================
+        */
+
+        async function getCurrentUser() {
+
+            const {
+                data: { user },
+                error
+            } =
+                await supabaseClient.auth.getUser();
+
+
+            if (error || !user) {
+
+                window.location.replace(
+                    "login.html"
+                );
+
+                return null;
+            }
+
+
+            return user;
+        }
+
+
+        /*
+        =====================================
+        FORMAT DATE
+        =====================================
+        */
+
+        function formatDate(dateString) {
+
+            const date =
+                new Date(dateString);
+
+
+            return date.toLocaleString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        /*
+        =====================================
+        SAFE HTML
+        =====================================
+        */
+
+        function escapeHTML(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent =
+                value || "";
+
+            return div.innerHTML;
+        }
+
+
+        /*
+        =====================================
+        STATUS MESSAGE
+        =====================================
+        */
+
+        function showStatus(text, type) {
+
+            statusMessage.textContent =
+                text;
+
+            statusMessage.className =
+                type === "success"
+                    ? "success"
+                    : "error-status";
+
+
+            setTimeout(function () {
+
+                statusMessage.style.display =
+                    "none";
+
+                statusMessage.className =
+                    "";
+
+            }, 3000);
+        }
+
+
+        /*
+        =====================================
+        LOAD MESSAGES
+        =====================================
+        */
+
+        async function loadMessages() {
+
+            const user =
+                await getCurrentUser();
+
+
+            if (!user) {
+                return;
+            }
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from("messages")
+                    .select("*")
+                    .order(
+                        "created_at",
+                        {
+                            ascending: false
+                        }
+                    );
+
+
+            if (error) {
+
+                console.error(
+                    "Load messages error:",
+                    error
+                );
+
+                messagesList.innerHTML = `
+                    <div class="error">
+                        Unable to load messages.
+                    </div>
+                `;
+
+                messageCount.textContent =
+                    "";
+
+                return;
+            }
+
+
+            /*
+            No messages
+            */
+
+            if (!data || data.length === 0) {
+
+                messageCount.textContent =
+                    "0 messages";
+
+                messagesList.innerHTML = `
+                    <div class="empty">
+                        <h2>No messages yet</h2>
+
+                        <p>
+                            Messages submitted through
+                            your Contact page will appear here.
+                        </p>
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            /*
+            Message count
+            */
+
+            messageCount.textContent =
+                data.length === 1
+                    ? "1 message"
+                    : data.length + " messages";
+
+
+            messagesList.innerHTML = "";
+
+
+            /*
+            Create message cards
+            */
+
+            data.forEach(function (item) {
+
+                const card =
+                    document.createElement(
+                        "article"
+                    );
+
+
+                card.className =
+                    "message-card";
+
+
+                const safeName =
+                    escapeHTML(item.name);
+
+                const safeEmail =
+                    escapeHTML(item.email);
+
+                const safeMessage =
+                    escapeHTML(item.message);
+
+
+                card.innerHTML = `
+
+                    <div class="message-header">
+
+                        <div>
+
+                            <h2 class="sender-name">
+                                ${safeName}
+                            </h2>
+
+                            <a
+                                href="mailto:${safeEmail}"
+                                class="sender-email"
+                            >
+                                ${safeEmail}
+                            </a>
+
+                        </div>
+
+
+                        <span class="message-date">
+                            ${formatDate(item.created_at)}
+                        </span>
+
+                    </div>
+
+
+                    <p class="message-body">
+                        ${safeMessage}
+                    </p>
+
+
+                    <div class="message-actions">
+
+                        <a
+                            href="mailto:${safeEmail}"
+                            class="reply-button"
+                        >
+                            Reply by Email
+                        </a>
+
+
+                        <button
+                            type="button"
+                            class="delete-button"
+                            data-id="${item.id}"
+                        >
+                            Delete
+                        </button>
+
+                    </div>
+                `;
+
+
+                messagesList.appendChild(
+                    card
+                );
+            });
+        }
+
+
+        /*
+        =====================================
+        DELETE MESSAGE
+        =====================================
+        */
+
+        messagesList.addEventListener(
+            "click",
+            async function (event) {
+
+                const deleteButton =
+                    event.target.closest(
+                        ".delete-button"
+                    );
+
+
+                if (!deleteButton) {
+                    return;
+                }
+
+
+                const messageId =
+                    deleteButton.dataset.id;
+
+
+                const confirmed =
+                    window.confirm(
+                        "Are you sure you want to delete this message?"
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                deleteButton.disabled =
+                    true;
+
+                deleteButton.textContent =
+                    "Deleting...";
+
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from("messages")
+                        .delete()
+                        .eq(
+                            "id",
+                            messageId
+                        );
+
+
+                if (error) {
+
+                    console.error(
+                        "Delete error:",
+                        error
+                    );
+
+                    showStatus(
+                        "Unable to delete the message.",
+                        "error"
+                    );
+
+                    deleteButton.disabled =
+                        false;
+
+                    deleteButton.textContent =
+                        "Delete";
+
+                    return;
+                }
+
+
+                showStatus(
+                    "Message deleted successfully.",
+                    "success"
+                );
+
+
+                loadMessages();
+            }
+        );
+
+
+        loadMessages();
+
+    </script>
+
+</body>
+</html>
