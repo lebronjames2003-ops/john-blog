@@ -2,69 +2,336 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>My Posts | John's Blog</title>
 
     <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .posts-loading,
+        .posts-empty,
+        .posts-error {
+            grid-column: 1 / -1;
+            padding: 40px 20px;
+            text-align: center;
+            background: #ffffff;
+            border-radius: 12px;
+        }
+
+        .posts-loading,
+        .posts-empty {
+            color: #667085;
+        }
+
+        .posts-error {
+            color: #dc2626;
+        }
+
+        .post-card-image {
+            width: 100%;
+            height: 190px;
+            margin-bottom: 18px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .post-card-date {
+            margin-bottom: 10px;
+            color: #667085;
+            font-size: 13px;
+        }
+
+        .post-card h2 {
+            margin-top: 0;
+        }
+    </style>
 </head>
 
-<script src="script.js"></script>
 <body>
 
- <header class="site-header">
+    <header class="site-header">
         <div class="header-container">
 
-            <a href="index.html" class="logo">John's Blog</a>
+            <a href="index.html" class="logo">
+                John's Blog
+            </a>
 
             <nav class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="about.html">About Me</a>
-                <a href="posts.html" class="active">My Posts</a>
+                <a href="posts.html" class="active">
+                    My Posts
+                </a>
                 <a href="contact.html">Contact</a>
             </nav>
 
         </div>
     </header>
 
-<main class="page-content">
-    <section>
-        <p class="small-title">MY POSTS</p>
-        <h1>Latest Blog Posts</h1>
 
-        <div class="posts-grid">
+    <main class="page-content">
 
+        <section>
+
+            <p class="small-title">
+                MY POSTS
+            </p>
+
+            <h1>
+                Latest Blog Posts
+            </h1>
+
+            <div
+                class="posts-grid"
+                id="posts-grid"
+            >
+
+            <!-- ORIGINAL SCHOOL ARTICLE -->
             <article class="post-card">
-                <h2>My Journey in Technology</h2>
-                <p>
-                    A short story about my experiences and the lessons
-                    I learned while studying technology.
+
+                <p class="post-card-date">
+                    First Blog
                 </p>
-                <a href="#">Read More</a>
+
+                <h2>
+                    From a 72-Hour Prototype to a Privacy Incident
+                </h2>
+
+                <p>
+                    This article discusses how a student-made platform became a privacy risk after it started collecting real student information without proper security.
+                </p>
+
+                <a href="article.html">
+                    Read More
+                </a>
+
             </article>
 
-            <article class="post-card">
-                <h2>Understanding Cybersecurity</h2>
-                <p>
-                    Simple cybersecurity practices that students can
-                    use to protect their personal information.
-                </p>
-                <a href="#">Read More</a>
-            </article>
 
-            <article class="post-card">
-                <h2>Building My First Website</h2>
-                <p>
-                    The challenges and lessons I experienced while
-                    creating my first personal website.
-                </p>
-                <a href="#">Read More</a>
-            </article>
+            <!-- DATABASE POSTS LOAD AFTER THIS -->
+            <div
+                class="posts-loading"
+                id="posts-loading"
+            >
+                Loading posts...
+            </div>
 
         </div>
-    </section>
-</main>
 
-<script src="script.js"></script>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL =
+            "https://mfvatxtvhxnzpdjecygn.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz";
+
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
+
+        const postsGrid =
+            document.getElementById("posts-grid");
+
+        const postsLoading =
+            document.getElementById("posts-loading");
+
+
+        function escapeHTML(value) {
+
+            const element =
+                document.createElement("div");
+
+            element.textContent =
+                value || "";
+
+            return element.innerHTML;
+        }
+
+
+        function formatDate(dateString) {
+
+            const date =
+                new Date(dateString);
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            );
+        }
+
+
+        async function loadPublishedPosts() {
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("posts")
+                        .select(
+                            "id, title, slug, excerpt, image_url, created_at"
+                        )
+                        .eq(
+                            "published",
+                            true
+                        )
+                        .order(
+                            "created_at",
+                            {
+                                ascending: false
+                            }
+                        );
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                if (!data || data.length === 0) {
+
+                    if (postsLoading) {
+                        postsLoading.remove();
+                    }
+
+                    return;
+                }
+
+
+                if (postsLoading) {
+                    postsLoading.remove();
+                }
+
+
+                data.forEach(function (post) {
+
+                    const card =
+                        document.createElement(
+                            "article"
+                        );
+
+
+                    card.className =
+                        "post-card";
+
+
+                    const safeTitle =
+                        escapeHTML(
+                            post.title
+                        );
+
+
+                    const safeExcerpt =
+                        escapeHTML(
+                            post.excerpt
+                        );
+
+
+                    let imageHTML = "";
+
+
+                    if (post.image_url) {
+
+                        const safeImage =
+                            escapeHTML(
+                                post.image_url
+                            );
+
+
+                        imageHTML = `
+                            <img
+                                src="${safeImage}"
+                                alt="${safeTitle}"
+                                class="post-card-image"
+                                loading="lazy"
+                            >
+                        `;
+                    }
+
+
+                    card.innerHTML = `
+
+                        ${imageHTML}
+
+                        <p class="post-card-date">
+                            ${formatDate(post.created_at)}
+                        </p>
+
+                        <h2>
+                            ${safeTitle}
+                        </h2>
+
+                        <p>
+                            ${
+                                safeExcerpt ||
+                                "Read this article on John's Blog."
+                            }
+                        </p>
+
+                        <a
+                            href="blog-post.html?slug=${encodeURIComponent(
+                                post.slug
+                            )}"
+                        >
+                            Read More
+                        </a>
+                    `;
+
+
+                    postsGrid.appendChild(
+                        card
+                    );
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to load posts:",
+                    error
+                );
+
+
+                postsGrid.innerHTML = `
+                    <div class="posts-error">
+
+                        <h2>
+                            Unable to load posts
+                        </h2>
+
+                        <p>
+                            Please try refreshing the page.
+                        </p>
+
+                    </div>
+                `;
+            }
+        }
+
+
+        loadPublishedPosts();
+    </script>
+
+
+    <script src="script.js"></script>
+
 </body>
 </html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Blog Post | John's Blog</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .dynamic-blog-page {
+            min-height: 80vh;
+            padding: 70px 20px;
+            background: #f4f7fc;
+        }
+
+        .dynamic-blog {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            overflow: hidden;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .blog-image {
+            display: none;
+            width: 100%;
+            max-height: 480px;
+            object-fit: cover;
+        }
+
+        .blog-content-wrapper {
+            padding: 50px;
+        }
+
+        .blog-date {
+            margin: 0 0 15px;
+            color: #667085;
+            font-size: 14px;
+        }
+
+        #blog-title {
+            margin: 0 0 18px;
+            color: #0f2347;
+            font-size: 46px;
+            line-height: 1.15;
+        }
+
+        #blog-excerpt {
+            margin: 0 0 35px;
+            color: #667085;
+            font-size: 19px;
+            line-height: 1.7;
+        }
+
+        #blog-content {
+            color: #344054;
+            font-size: 17px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 40px;
+            color: #2563eb;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        .blog-status {
+            max-width: 900px;
+            margin: auto;
+            padding: 60px 20px;
+            text-align: center;
+            background: white;
+            border-radius: 16px;
+        }
+
+        .blog-status h1 {
+            margin-top: 0;
+            color: #0f2347;
+        }
+
+        .blog-status p {
+            color: #667085;
+        }
+
+        @media screen and (max-width: 600px) {
+            .dynamic-blog-page {
+                padding: 30px 14px;
+            }
+
+            .blog-content-wrapper {
+                padding: 28px 22px;
+            }
+
+            #blog-title {
+                font-size: 32px;
+            }
+
+            #blog-excerpt {
+                font-size: 17px;
+            }
+
+            #blog-content {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-container">
+
+            <a href="index.html" class="logo">
+                John's Blog
+            </a>
+
+            <nav class="nav-links">
+                <a href="index.html">
+                    Home
+                </a>
+
+                <a href="about.html">
+                    About Me
+                </a>
+
+                <a href="posts.html" class="active">
+                    My Posts
+                </a>
+
+                <a href="contact.html">
+                    Contact
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+
+    <main class="dynamic-blog-page">
+
+        <div
+            id="loading"
+            class="blog-status"
+        >
+            <h1>Loading post...</h1>
+
+            <p>Please wait.</p>
+        </div>
+
+
+        <div
+            id="error-message"
+            class="blog-status"
+            style="display: none;"
+        >
+            <h1>Post Not Found</h1>
+
+            <p>
+                This post may not exist or may not be published.
+            </p>
+
+            <a
+                href="posts.html"
+                class="back-button"
+            >
+                ← Back to My Posts
+            </a>
+        </div>
+
+
+        <article
+            id="blog-post"
+            class="dynamic-blog"
+            style="display: none;"
+        >
+
+            <img
+                id="blog-image"
+                class="blog-image"
+                src=""
+                alt=""
+            >
+
+            <div class="blog-content-wrapper">
+
+                <p
+                    id="blog-date"
+                    class="blog-date"
+                ></p>
+
+                <h1 id="blog-title"></h1>
+
+                <p id="blog-excerpt"></p>
+
+                <div id="blog-content"></div>
+
+                <a
+                    href="posts.html"
+                    class="back-button"
+                >
+                    ← Back to My Posts
+                </a>
+
+            </div>
+
+        </article>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL =
+            "https://mfvatxtvhxnzpdjecygn.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz";
+
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
+
+        const loading =
+            document.getElementById("loading");
+
+        const errorMessage =
+            document.getElementById("error-message");
+
+        const blogPost =
+            document.getElementById("blog-post");
+
+        const blogTitle =
+            document.getElementById("blog-title");
+
+        const blogExcerpt =
+            document.getElementById("blog-excerpt");
+
+        const blogContent =
+            document.getElementById("blog-content");
+
+        const blogDate =
+            document.getElementById("blog-date");
+
+        const blogImage =
+            document.getElementById("blog-image");
+
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const slug =
+            urlParams.get("slug");
+
+
+        function formatDate(dateString) {
+            const date =
+                new Date(dateString);
+
+            return date.toLocaleDateString(
+                "en-US",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            );
+        }
+
+
+        function showError() {
+            loading.style.display =
+                "none";
+
+            blogPost.style.display =
+                "none";
+
+            errorMessage.style.display =
+                "block";
+        }
+
+
+        async function loadBlogPost() {
+
+            if (!slug) {
+                showError();
+                return;
+            }
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabaseClient
+                        .from("posts")
+                        .select(
+                            "title, slug, excerpt, content, image_url, created_at"
+                        )
+                        .eq(
+                            "slug",
+                            slug
+                        )
+                        .eq(
+                            "published",
+                            true
+                        )
+                        .single();
+
+
+                if (error || !data) {
+                    console.error(
+                        "Post error:",
+                        error
+                    );
+
+                    showError();
+                    return;
+                }
+
+
+                blogTitle.textContent =
+                    data.title || "Untitled";
+
+                blogExcerpt.textContent =
+                    data.excerpt || "";
+
+                blogContent.textContent =
+                    data.content || "";
+
+                blogDate.textContent =
+                    formatDate(
+                        data.created_at
+                    );
+
+
+                if (data.image_url) {
+                    blogImage.src =
+                        data.image_url;
+
+                    blogImage.alt =
+                        data.title || "Blog image";
+
+                    blogImage.style.display =
+                        "block";
+                } else {
+                    blogImage.style.display =
+                        "none";
+                }
+
+
+                document.title =
+                    data.title +
+                    " | John's Blog";
+
+
+                loading.style.display =
+                    "none";
+
+                errorMessage.style.display =
+                    "none";
+
+                blogPost.style.display =
+                    "block";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Unable to load post:",
+                    error
+                );
+
+                showError();
+            }
+        }
+
+
+        loadBlogPost();
+    </script>
+
+</body>
+</html>
