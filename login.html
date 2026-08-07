@@ -24,27 +24,28 @@
             padding: 20px;
             font-family: Arial, sans-serif;
             background: #f4f6f8;
-            color: #1f2937;
+            color: #0f2347;
         }
 
         .login-card {
             width: 100%;
             max-width: 420px;
-            padding: 35px;
+            padding: 36px;
             border-radius: 16px;
-            background: white;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
         }
 
-        .login-card h1 {
+        h1 {
             margin: 0 0 8px;
             text-align: center;
+            font-size: 34px;
         }
 
-        .login-card p {
-            margin: 0 0 25px;
+        .subtitle {
+            margin: 0 0 26px;
             text-align: center;
-            color: #6b7280;
+            color: #667085;
         }
 
         .form-group {
@@ -54,13 +55,13 @@
         label {
             display: block;
             margin-bottom: 7px;
-            font-weight: 600;
+            font-weight: bold;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
+            padding: 13px;
+            border: 1px solid #d0d5dd;
             border-radius: 8px;
             font-size: 16px;
         }
@@ -78,8 +79,12 @@
             background: #2563eb;
             color: white;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
         }
 
         button:disabled {
@@ -88,9 +93,10 @@
         }
 
         #login-message {
-            min-height: 22px;
+            min-height: 24px;
             margin-top: 15px;
             text-align: center;
+            line-height: 1.4;
         }
 
         .error-message {
@@ -103,10 +109,28 @@
 
         .back-link {
             display: block;
-            margin-top: 20px;
+            margin-top: 18px;
             text-align: center;
             color: #2563eb;
             text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 16px;
+            }
+
+            .login-card {
+                padding: 28px 22px;
+            }
+
+            h1 {
+                font-size: 29px;
+            }
         }
     </style>
 </head>
@@ -114,26 +138,35 @@
 <body>
     <main class="login-card">
         <h1>Admin Login</h1>
-        <p>Manage John's Blog</p>
+
+        <p class="subtitle">
+            Manage John's Blog
+        </p>
 
         <form id="login-form">
             <div class="form-group">
-                <label for="email">Email address</label>
+                <label for="email">
+                    Email address
+                </label>
 
                 <input
                     type="email"
                     id="email"
+                    name="email"
                     autocomplete="email"
                     required
                 >
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">
+                    Password
+                </label>
 
                 <input
                     type="password"
                     id="password"
+                    name="password"
                     autocomplete="current-password"
                     required
                 >
@@ -143,7 +176,10 @@
                 Log in
             </button>
 
-            <div id="login-message" aria-live="polite"></div>
+            <div
+                id="login-message"
+                aria-live="polite"
+            ></div>
         </form>
 
         <a href="../index.html" class="back-link">
@@ -151,8 +187,180 @@
         </a>
     </main>
 
+    <!-- Load Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../supabase-config.js"></script>
-    <script src="admin-login.js"></script>
+
+    <script>
+        const SUPABASE_URL =
+            "https://mfvatxtvhxnzpdjecygn.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz";
+
+        const loginForm =
+            document.getElementById("login-form");
+
+        const loginButton =
+            document.getElementById("login-button");
+
+        const loginMessage =
+            document.getElementById("login-message");
+
+        let supabaseClient = null;
+
+        function showMessage(message, type = "error") {
+            loginMessage.textContent = message;
+
+            loginMessage.className =
+                type === "success"
+                    ? "success-message"
+                    : "error-message";
+        }
+
+        function connectToSupabase() {
+            if (!window.supabase) {
+                showMessage(
+                    "Supabase failed to load. Please refresh the page."
+                );
+
+                return false;
+            }
+
+            try {
+                supabaseClient =
+                    window.supabase.createClient(
+                        SUPABASE_URL,
+                        SUPABASE_PUBLISHABLE_KEY
+                    );
+
+                console.log(
+                    "Supabase connected successfully."
+                );
+
+                return true;
+            } catch (error) {
+                console.error(
+                    "Supabase connection error:",
+                    error
+                );
+
+                showMessage(
+                    "Connection error: " + error.message
+                );
+
+                return false;
+            }
+        }
+
+        async function checkExistingSession() {
+            if (!supabaseClient) {
+                return;
+            }
+
+            try {
+                const { data, error } =
+                    await supabaseClient.auth.getSession();
+
+                if (error) {
+                    console.error(
+                        "Session error:",
+                        error.message
+                    );
+
+                    return;
+                }
+
+                if (data.session) {
+                    window.location.replace(
+                        "dashboard.html"
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "Unexpected session error:",
+                    error
+                );
+            }
+        }
+
+        loginForm.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+
+                if (!supabaseClient) {
+                    showMessage(
+                        "Supabase is not connected. Refresh the page."
+                    );
+
+                    return;
+                }
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim();
+
+                const password =
+                    document
+                        .getElementById("password")
+                        .value;
+
+                loginButton.disabled = true;
+                loginButton.textContent = "Logging in...";
+                loginMessage.textContent = "";
+
+                try {
+                    const { data, error } =
+                        await supabaseClient.auth
+                            .signInWithPassword({
+                                email: email,
+                                password: password
+                            });
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    if (!data.session) {
+                        throw new Error(
+                            "Login failed. No session was created."
+                        );
+                    }
+
+                    showMessage(
+                        "Login successful!",
+                        "success"
+                    );
+
+                    setTimeout(function () {
+                        window.location.replace(
+                            "dashboard.html"
+                        );
+                    }, 500);
+                } catch (error) {
+                    console.error(
+                        "Login error:",
+                        error
+                    );
+
+                    showMessage(
+                        error.message ||
+                        "Unable to log in."
+                    );
+                } finally {
+                    loginButton.disabled = false;
+                    loginButton.textContent = "Log in";
+                }
+            }
+        );
+
+        const connected = connectToSupabase();
+
+        if (connected) {
+            checkExistingSession();
+        }
+    </script>
 </body>
 </html>
