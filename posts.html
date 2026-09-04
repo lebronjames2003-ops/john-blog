@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
@@ -90,37 +91,68 @@
                 id="posts-grid"
             >
 
-            <!-- ORIGINAL SCHOOL ARTICLE -->
-            <article class="post-card">
+                <!-- ORIGINAL SCHOOL ARTICLE -->
+                <article class="post-card">
 
-                <p class="post-card-date">
-                    First Blog
-                </p>
+                    <p class="post-card-date">
+                        First Blog
+                    </p>
 
-                <h2>
-                    From a 72-Hour Prototype to a Privacy Incident
-                </h2>
+                    <h2>
+                        From a 72-Hour Prototype to a Privacy Incident
+                    </h2>
 
-                <p>
-                    This article discusses how a student-made platform became a privacy risk after it started collecting real student information without proper security.
-                </p>
+                    <p>
+                        This article discusses how a student-made platform became
+                        a privacy risk after it started collecting real student
+                        information without proper security.
+                    </p>
 
-                <a href="article.html">
-                    Read More
-                </a>
+                    <a href="article.html">
+                        Read More
+                    </a>
 
-            </article>
+                </article>
 
 
-            <!-- DATABASE POSTS LOAD AFTER THIS -->
-            <div
-                class="posts-loading"
-                id="posts-loading"
-            >
-                Loading posts...
+                <!-- RISK ASSESSMENT ARTICLE -->
+                <article class="post-card">
+
+                    <p class="post-card-date">
+                        September 4, 2026
+                    </p>
+
+                    <h2>
+                        What Our Risk Assessment Fieldwork Taught Us About Information Security
+                    </h2>
+
+                    <p>
+                        A reflection on what our group learned from conducting a real
+                        risk assessment, including how we identified risks, evaluated
+                        their impact and probability, and recommended practical
+                        security controls.
+                    </p>
+
+                    <a href="risk-assessment.html">
+                        Read More
+                    </a>
+
+                </article>
+
+
+                <!-- DATABASE POSTS LOAD AFTER THIS -->
+                <div
+                    class="posts-loading"
+                    id="posts-loading"
+                >
+                    Loading posts...
+                </div>
+
             </div>
 
-        </div>
+        </section>
+
+    </main>
 
 
     <!-- Supabase -->
@@ -310,19 +342,30 @@
                 );
 
 
-                postsGrid.innerHTML = `
-                    <div class="posts-error">
+                if (postsLoading) {
+                    postsLoading.remove();
+                }
 
-                        <h2>
-                            Unable to load posts
-                        </h2>
 
-                        <p>
-                            Please try refreshing the page.
-                        </p>
+                const errorBox =
+                    document.createElement("div");
 
-                    </div>
+                errorBox.className =
+                    "posts-error";
+
+                errorBox.innerHTML = `
+                    <h2>
+                        Unable to load posts
+                    </h2>
+
+                    <p>
+                        Please try refreshing the page.
+                    </p>
                 `;
+
+                postsGrid.appendChild(
+                    errorBox
+                );
             }
         }
 
