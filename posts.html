@@ -93,6 +93,32 @@
                 id="posts-grid"
             >
 
+                <!-- SOC PILOT ARTICLE -->
+                <article class="post-card">
+
+                    <p class="post-card-date">
+                        October 16, 2026
+                    </p>
+
+                    <h2>
+                        Becoming a SOC Pilot:
+                        Why Autonomous Security Still Needs Human Judgment
+                    </h2>
+
+                    <p>
+                        A reflection on responsible AI autonomy in security
+                        operations, the importance of accurate asset
+                        information, and the skills needed to become
+                        a SOC pilot.
+                    </p>
+
+                    <a href="soc-pilot.html">
+                        Read More
+                    </a>
+
+                </article>
+
+
                 <!-- NEW AUDITOR REFLECTION ARTICLE -->
                 <article class="post-card">
 
@@ -243,6 +269,7 @@
                 }
 
                 return url.href;
+
             } catch {
                 return null;
             }
@@ -251,6 +278,7 @@
 
         function createPostCard(post) {
             const card = document.createElement("article");
+
             card.className = "post-card";
 
             const imageURL = getSafeImageURL(post.image_url);
@@ -267,18 +295,22 @@
             }
 
             const date = document.createElement("p");
+
             date.className = "post-card-date";
             date.textContent = formatDate(post.created_at);
 
             const title = document.createElement("h2");
+
             title.textContent = post.title || "Untitled post";
 
             const excerpt = document.createElement("p");
+
             excerpt.textContent =
                 post.excerpt ||
                 "Read this article on John's Blog.";
 
             const link = document.createElement("a");
+
             link.href =
                 "blog-post.html?slug=" +
                 encodeURIComponent(post.slug || "");
@@ -350,10 +382,12 @@
                 errorBox.className = "posts-error";
 
                 const heading = document.createElement("h2");
+
                 heading.textContent =
                     "Unable to load additional posts";
 
                 const message = document.createElement("p");
+
                 message.textContent =
                     "The articles above are still available. " +
                     "Please refresh the page to retry loading additional posts.";
