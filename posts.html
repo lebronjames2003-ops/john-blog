@@ -64,9 +64,11 @@
             <nav class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="about.html">About Me</a>
+
                 <a href="posts.html" class="active">
                     My Posts
                 </a>
+
                 <a href="contact.html">Contact</a>
             </nav>
 
@@ -91,6 +93,34 @@
                 id="posts-grid"
             >
 
+                <!-- NEW AUDITOR REFLECTION ARTICLE -->
+                <article class="post-card">
+
+                    <p class="post-card-date">
+                        October 16, 2026
+                    </p>
+
+                    <h2>
+                        Beyond the Risk Score: Revisiting Our Risk
+                        Assessment Through an Auditor’s Eyes
+                    </h2>
+
+                    <p>
+                        Revisiting our group’s Risk Assessment Form
+                        through an auditor’s perspective, focusing
+                        on asset classification, ownership, control
+                        evidence, and how an inventory and audit
+                        checklist can strengthen our recommended
+                        treatments.
+                    </p>
+
+                    <a href="risk-assessment-audit.html">
+                        Read More
+                    </a>
+
+                </article>
+
+
                 <!-- ORIGINAL SCHOOL ARTICLE -->
                 <article class="post-card">
 
@@ -103,9 +133,10 @@
                     </h2>
 
                     <p>
-                        This article discusses how a student-made platform became
-                        a privacy risk after it started collecting real student
-                        information without proper security.
+                        This article discusses how a student-made
+                        platform became a privacy risk after it
+                        started collecting real student information
+                        without proper security.
                     </p>
 
                     <a href="article.html">
@@ -115,7 +146,7 @@
                 </article>
 
 
-                <!-- RISK ASSESSMENT ARTICLE -->
+                <!-- ORIGINAL RISK ASSESSMENT ARTICLE -->
                 <article class="post-card">
 
                     <p class="post-card-date">
@@ -123,14 +154,16 @@
                     </p>
 
                     <h2>
-                        What Our Risk Assessment Fieldwork Taught Us About Information Security
+                        What Our Risk Assessment Fieldwork Taught Us
+                        About Information Security
                     </h2>
 
                     <p>
-                        A reflection on what our group learned from conducting a real
-                        risk assessment, including how we identified risks, evaluated
-                        their impact and probability, and recommended practical
-                        security controls.
+                        A reflection on what our group learned from
+                        conducting a real risk assessment, including
+                        how we identified risks, evaluated their
+                        impact and probability, and recommended
+                        practical security controls.
                     </p>
 
                     <a href="risk-assessment.html">
@@ -144,6 +177,7 @@
                 <div
                     class="posts-loading"
                     id="posts-loading"
+                    role="status"
                 >
                     Loading posts...
                 </div>
@@ -165,14 +199,6 @@
         const SUPABASE_PUBLISHABLE_KEY =
             "sb_publishable_pLh5v9s8fcjrZnVwjPg3zA_0z5afFFz";
 
-
-        const supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_PUBLISHABLE_KEY
-            );
-
-
         const postsGrid =
             document.getElementById("posts-grid");
 
@@ -180,22 +206,12 @@
             document.getElementById("posts-loading");
 
 
-        function escapeHTML(value) {
-
-            const element =
-                document.createElement("div");
-
-            element.textContent =
-                value || "";
-
-            return element.innerHTML;
-        }
-
-
         function formatDate(dateString) {
+            const date = new Date(dateString);
 
-            const date =
-                new Date(dateString);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
 
             return date.toLocaleDateString(
                 "en-US",
@@ -208,23 +224,91 @@
         }
 
 
-        async function loadPublishedPosts() {
+        function getSafeImageURL(value) {
+            if (!value) {
+                return null;
+            }
 
             try {
+                const url = new URL(
+                    value,
+                    window.location.href
+                );
 
-                const {
-                    data,
-                    error
-                } =
+                if (
+                    url.protocol !== "https:" &&
+                    url.protocol !== "http:"
+                ) {
+                    return null;
+                }
+
+                return url.href;
+            } catch {
+                return null;
+            }
+        }
+
+
+        function createPostCard(post) {
+            const card = document.createElement("article");
+            card.className = "post-card";
+
+            const imageURL = getSafeImageURL(post.image_url);
+
+            if (imageURL) {
+                const image = document.createElement("img");
+
+                image.src = imageURL;
+                image.alt = post.title || "Blog post image";
+                image.className = "post-card-image";
+                image.loading = "lazy";
+
+                card.appendChild(image);
+            }
+
+            const date = document.createElement("p");
+            date.className = "post-card-date";
+            date.textContent = formatDate(post.created_at);
+
+            const title = document.createElement("h2");
+            title.textContent = post.title || "Untitled post";
+
+            const excerpt = document.createElement("p");
+            excerpt.textContent =
+                post.excerpt ||
+                "Read this article on John's Blog.";
+
+            const link = document.createElement("a");
+            link.href =
+                "blog-post.html?slug=" +
+                encodeURIComponent(post.slug || "");
+
+            link.textContent = "Read More";
+
+            card.appendChild(date);
+            card.appendChild(title);
+            card.appendChild(excerpt);
+            card.appendChild(link);
+
+            return card;
+        }
+
+
+        async function loadPublishedPosts() {
+            try {
+                const supabaseClient =
+                    window.supabase.createClient(
+                        SUPABASE_URL,
+                        SUPABASE_PUBLISHABLE_KEY
+                    );
+
+                const { data, error } =
                     await supabaseClient
                         .from("posts")
                         .select(
                             "id, title, slug, excerpt, image_url, created_at"
                         )
-                        .eq(
-                            "published",
-                            true
-                        )
+                        .eq("published", true)
                         .order(
                             "created_at",
                             {
@@ -232,147 +316,58 @@
                             }
                         );
 
-
                 if (error) {
                     throw error;
                 }
-
-
-                if (!data || data.length === 0) {
-
-                    if (postsLoading) {
-                        postsLoading.remove();
-                    }
-
-                    return;
-                }
-
 
                 if (postsLoading) {
                     postsLoading.remove();
                 }
 
+                if (!data || data.length === 0) {
+                    return;
+                }
 
                 data.forEach(function (post) {
-
-                    const card =
-                        document.createElement(
-                            "article"
-                        );
-
-
-                    card.className =
-                        "post-card";
-
-
-                    const safeTitle =
-                        escapeHTML(
-                            post.title
-                        );
-
-
-                    const safeExcerpt =
-                        escapeHTML(
-                            post.excerpt
-                        );
-
-
-                    let imageHTML = "";
-
-
-                    if (post.image_url) {
-
-                        const safeImage =
-                            escapeHTML(
-                                post.image_url
-                            );
-
-
-                        imageHTML = `
-                            <img
-                                src="${safeImage}"
-                                alt="${safeTitle}"
-                                class="post-card-image"
-                                loading="lazy"
-                            >
-                        `;
-                    }
-
-
-                    card.innerHTML = `
-
-                        ${imageHTML}
-
-                        <p class="post-card-date">
-                            ${formatDate(post.created_at)}
-                        </p>
-
-                        <h2>
-                            ${safeTitle}
-                        </h2>
-
-                        <p>
-                            ${
-                                safeExcerpt ||
-                                "Read this article on John's Blog."
-                            }
-                        </p>
-
-                        <a
-                            href="blog-post.html?slug=${encodeURIComponent(
-                                post.slug
-                            )}"
-                        >
-                            Read More
-                        </a>
-                    `;
-
-
                     postsGrid.appendChild(
-                        card
+                        createPostCard(post)
                     );
                 });
 
-
             } catch (error) {
-
                 console.error(
                     "Unable to load posts:",
                     error
                 );
 
-
                 if (postsLoading) {
                     postsLoading.remove();
                 }
 
-
                 const errorBox =
                     document.createElement("div");
 
-                errorBox.className =
-                    "posts-error";
+                errorBox.className = "posts-error";
 
-                errorBox.innerHTML = `
-                    <h2>
-                        Unable to load posts
-                    </h2>
+                const heading = document.createElement("h2");
+                heading.textContent =
+                    "Unable to load additional posts";
 
-                    <p>
-                        Please try refreshing the page.
-                    </p>
-                `;
+                const message = document.createElement("p");
+                message.textContent =
+                    "The articles above are still available. " +
+                    "Please refresh the page to retry loading additional posts.";
 
-                postsGrid.appendChild(
-                    errorBox
-                );
+                errorBox.appendChild(heading);
+                errorBox.appendChild(message);
+
+                postsGrid.appendChild(errorBox);
             }
         }
 
 
         loadPublishedPosts();
     </script>
-
 
     <script src="script.js"></script>
 
